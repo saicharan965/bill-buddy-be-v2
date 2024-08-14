@@ -6,5 +6,6 @@
         public string Name { get; set; }
         public string EmailId { get; set; }
         public string ProfilePictureUrl { get; set; }
+        public List<Transaction> Transactions { get; set; }
     }
 }
