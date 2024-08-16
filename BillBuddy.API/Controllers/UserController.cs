@@ -18,14 +18,14 @@ namespace BillBuddy.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<UserDetails>> GetUserDetails([FromBody] UserDetails userDetails)
+        public async Task<ActionResult<UserDetails>> GetUserDetails([FromBody] UserDetails userDetails, CancellationToken cancellationToken)
         {
             if (userDetails == null)
             {
                 return BadRequest("User details cannot be null.");
             }
             var existingUser = await _appDbContext.Users
-                .FirstOrDefaultAsync(u => u.Auth0Identifier == userDetails.Auth0Identifier);
+                .FirstOrDefaultAsync(u => u.Auth0Identifier == userDetails.Auth0Identifier, cancellationToken);
             if (existingUser == null)
             {
                 var newUser = new User
@@ -40,7 +40,7 @@ namespace BillBuddy.API.Controllers
                     IsActive = true
                 };
                 _appDbContext.Users.Add(newUser);
-                await _appDbContext.SaveChangesAsync();
+                await _appDbContext.SaveChangesAsync(cancellationToken);
                 return CreatedAtAction(nameof(GetUserDetails), new { id = newUser.PublicIndentifier }, MapToUserDetails(newUser));
             }
 

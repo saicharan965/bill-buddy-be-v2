@@ -4,7 +4,7 @@ namespace BillBuddy.API.DTOs
 {
     public class SplitTransactionParticipantDetails
     {
-        public string PublicIndentifier { get; set; }
+        public Guid PublicIdentifier { get; set; }
         public UserDetails Participant { get; set; }
         public decimal SplitAmount { get; set; }
         public decimal AmountPaid { get; set; }
