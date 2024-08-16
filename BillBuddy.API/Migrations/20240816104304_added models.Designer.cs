@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BillBuddy.API.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20240816102342_third migration")]
-    partial class thirdmigration
+    [Migration("20240816104304_added models")]
+    partial class addedmodels
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,23 +24,6 @@ namespace BillBuddy.API.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("BillBuddy.API.Models.Group", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Groups");
-                });
 
             modelBuilder.Entity("BillBuddy.API.Models.SplitTransaction", b =>
                 {
@@ -75,7 +58,7 @@ namespace BillBuddy.API.Migrations
 
                     b.HasIndex("PaidByUserId");
 
-                    b.ToTable("Transactions");
+                    b.ToTable("SplitTransactions");
                 });
 
             modelBuilder.Entity("BillBuddy.API.Models.SplitTransactionParticipant", b =>
@@ -119,7 +102,7 @@ namespace BillBuddy.API.Migrations
 
                     b.HasIndex("SplitTransactionid");
 
-                    b.ToTable("Participants");
+                    b.ToTable("SplitTransactionParticipants");
                 });
 
             modelBuilder.Entity("BillBuddy.API.Models.User", b =>
@@ -142,9 +125,6 @@ namespace BillBuddy.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("GroupId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -163,8 +143,6 @@ namespace BillBuddy.API.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("UserId");
-
-                    b.HasIndex("GroupId");
 
                     b.ToTable("Users");
                 });
@@ -193,18 +171,6 @@ namespace BillBuddy.API.Migrations
                         .HasForeignKey("SplitTransactionid");
 
                     b.Navigation("Participant");
-                });
-
-            modelBuilder.Entity("BillBuddy.API.Models.User", b =>
-                {
-                    b.HasOne("BillBuddy.API.Models.Group", null)
-                        .WithMany("Participants")
-                        .HasForeignKey("GroupId");
-                });
-
-            modelBuilder.Entity("BillBuddy.API.Models.Group", b =>
-                {
-                    b.Navigation("Participants");
                 });
 
             modelBuilder.Entity("BillBuddy.API.Models.SplitTransaction", b =>

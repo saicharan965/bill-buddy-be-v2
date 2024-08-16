@@ -6,9 +6,8 @@ namespace BillBuddy.API.Data
     public class ApplicationDBContext:DbContext
     {
         public ApplicationDBContext(DbContextOptions<ApplicationDBContext>options):base(options) {}
-        public DbSet<Group> Groups { get; set; }
-        public DbSet<SplitTransactionParticipant> Participants { get; set; }
-        public DbSet<SplitTransaction> Transactions { get; set; }
+        public DbSet<SplitTransactionParticipant> SplitTransactionParticipants { get; set; }
+        public DbSet<SplitTransaction> SplitTransactions { get; set; }
         public DbSet<User> Users { get; set; }
     }
 }

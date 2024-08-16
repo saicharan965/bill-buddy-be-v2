@@ -26,14 +26,12 @@ namespace BillBuddy.API.Controllers
             }
             var existingUser = await _appDbContext.Users
                 .FirstOrDefaultAsync(u => u.Auth0Identifier == userDetails.Auth0Identifier);
-
             if (existingUser == null)
             {
                 var newUser = new User
                 {
                     Auth0Identifier = userDetails.Auth0Identifier,
                     PublicIndentifier = Guid.NewGuid(),
-                    UserId = await GetNextUserIdAsync(),
                     FirstName = userDetails.FirstName,
                     LastName = userDetails.LastName,
                     EmailId = userDetails.EmailId,
@@ -41,19 +39,45 @@ namespace BillBuddy.API.Controllers
                     IsDeleted = false,
                     IsActive = true
                 };
-
                 _appDbContext.Users.Add(newUser);
                 await _appDbContext.SaveChangesAsync();
-
                 return CreatedAtAction(nameof(GetUserDetails), new { id = newUser.PublicIndentifier }, MapToUserDetails(newUser));
             }
 
             return Ok(MapToUserDetails(existingUser));
         }
 
-        private async Task<int> GetNextUserIdAsync()
+        [HttpPut]
+        public async Task<ActionResult<UserDetails>> Update([FromBody] UserDetails userDetails, CancellationToken cancellationToken)
         {
-            return await _appDbContext.Users.CountAsync() + 1;
+            var userToUpdate = await _appDbContext.Users.FirstOrDefaultAsync(u => u.PublicIndentifier == userDetails.PublicIndentifier, cancellationToken);
+            if (userToUpdate == null)
+            {
+                return NotFound($"The user with ID {userDetails.PublicIndentifier} was not found.");
+            }
+            userToUpdate.ProfilePictureUrl = userDetails.ProfilePictureUrl;
+            userToUpdate.FirstName = userDetails.FirstName;
+            userToUpdate.LastName = userDetails.LastName;
+            userToUpdate.EmailId = userDetails.EmailId;
+            await _appDbContext.SaveChangesAsync(cancellationToken);
+            return Ok(MapToUserDetails(userToUpdate));
+        }
+
+        [HttpDelete("{id:guid}")]
+        public async Task<ActionResult<UserDetails>> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
+        {
+            if (id.Equals(Guid.Empty))
+            {
+                return BadRequest("User Id cannot be empty GUID.");
+            }
+            var userToDelete = await _appDbContext.Users.FirstOrDefaultAsync(u => u.PublicIndentifier == id, cancellationToken);
+            if (userToDelete == null)
+            {
+                return NotFound($"The user with ID {id} was not found.");
+            }
+            userToDelete.IsDeleted = true;
+            _appDbContext.SaveChanges();
+            return Ok(userToDelete);
         }
 
         private UserDetails MapToUserDetails(User user)
@@ -72,3 +96,13 @@ namespace BillBuddy.API.Controllers
         }
     }
 }
+
+// We use "cancellationToken" just like we use takeUntil() for unsubscribe.
+// It stops all the async tasks when the request has been cancelled.We use this to aviod memory leaks.
+//For example, Frontend makes req, then cancells.But we continue to execute a task.But in this case, if we make cancellationToken available, We can stop the async calls
+
+// use Task.WhenAll() for multi-threaded programming.It makes Async calls like Fork join in Rxjs. For example :
+//var userTask = _appDbContext.Users.FirstOrDefaultAsync(u => u.PublicIndentifier == id, cancellationToken);
+//var userTask1 = _appDbContext.Users.FirstOrDefaultAsync(u => u.PublicIndentifier == id, cancellationToken);
+//var userTask2 = _appDbContext.Users.FirstOrDefaultAsync(u => u.PublicIndentifier == id, cancellationToken);
+//var userss = await Task.WhenAll(userTask, userTask1, userTask2);

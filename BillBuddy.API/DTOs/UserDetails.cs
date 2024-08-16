@@ -2,8 +2,9 @@
 {
     public class UserDetails
     {
-        public string Auth0Identifier { get; set; }
+        public int UserId { get; set; } // Identity column
         public Guid PublicIndentifier { get; set; }
+        public string Auth0Identifier { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string EmailId { get; set; }
