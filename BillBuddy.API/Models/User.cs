@@ -2,15 +2,14 @@
 {
     public class User
     {
-        public string Guid { get; set; }
-        public string InternalId { get; set; }
-        public string PublicIndentifier { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string EmailId { get; set; }
-        public string ProfilePictureUrl { get; set; }
-        public List<SplitTransaction> Transactions { get; set; }
-        public bool IsDeleted { get; set; }
-        public bool IsActive { get; set; }
+        public required int UserId { get; set; }
+        public required Guid PublicIndentifier { get; set; }
+        public required string Auth0Identifier { get; set; }
+        public required string FirstName { get; set; }
+        public required string LastName { get; set; }
+        public required string EmailId { get; set; }
+        public required string ProfilePictureUrl { get; set; }
+        public required bool IsDeleted { get; set; }
+        public required bool IsActive { get; set; }
     }
 }

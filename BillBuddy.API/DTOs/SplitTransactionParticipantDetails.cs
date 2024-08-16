@@ -1,4 +1,6 @@
-﻿namespace BillBuddy.API.DTOs
+﻿using BillBuddy.API.Enums;
+
+namespace BillBuddy.API.DTOs
 {
     public class SplitTransactionParticipantDetails
     {
@@ -8,6 +10,6 @@
         public decimal AmountPaid { get; set; }
         public decimal BalanceAmount { get; set; }
         public DateTime LastPaidDate { get; set; }
-        public string SettleMentStatus { get; set; }
+        public SettlementStatus SettleMentStatus { get; set; }
     }
 }

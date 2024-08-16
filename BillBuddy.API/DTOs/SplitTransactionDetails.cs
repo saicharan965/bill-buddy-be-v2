@@ -1,4 +1,4 @@
-﻿namespace BillBuddy.API.DTOs
+﻿namespace BillBuddy.API.Models
 {
     public class SplitTransactionDetails
     {
@@ -10,7 +10,7 @@
         public DateTime TransactionDateTIme { get; set; }
         public DateTime SplitDateTIme { get; set; }
         public DateTime DueDateTime { get; set; }
-        public UserDetails PaidBy { get; set; }
-        public List<SplitTransactionParticipantDetails> Participants { get; set; }
+        public User PaidBy { get; set; }
+        public List<SplitTransactionParticipant> Participants { get; set; }
     }
 }
