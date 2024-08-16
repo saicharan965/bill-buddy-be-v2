@@ -1,8 +1,7 @@
 ﻿namespace BillBuddy.API.Models;
 public class SplitTransaction
 {
-    public string Guid { get; set; }
-    public string InternalId { get; set; }
+    public Guid id { get; set; }
     public string PublicIndentifier { get; set; }
     public string Title { get; set; }
     public decimal TotalAmount { get; set; }
