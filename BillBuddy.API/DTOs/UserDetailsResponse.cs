@@ -1,10 +1,8 @@
 ﻿namespace BillBuddy.API.DTOs
 {
-    public class UserDetails
+    public class UserDetailsResponse
     {
-        public int UserId { get; set; } // Identity column
-        public Guid PublicIndentifier { get; set; }
-        public string Auth0Identifier { get; set; }
+        public Guid PublicIdentifier { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string EmailId { get; set; }

@@ -18,20 +18,22 @@ namespace BillBuddy.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<UserDetails>> GetUserDetails([FromBody] UserDetails userDetails, CancellationToken cancellationToken)
+        public async Task<ActionResult<UserDetailsResponse>> CreateOrGetUser([FromBody] CreateUserRequest userDetails, CancellationToken cancellationToken)
         {
             if (userDetails == null)
             {
                 return BadRequest("User details cannot be null.");
             }
+
             var existingUser = await _appDbContext.Users
                 .FirstOrDefaultAsync(u => u.Auth0Identifier == userDetails.Auth0Identifier, cancellationToken);
+
             if (existingUser == null)
             {
                 var newUser = new User
                 {
                     Auth0Identifier = userDetails.Auth0Identifier,
-                    PublicIndentifier = Guid.NewGuid(),
+                    PublicIdentifier = Guid.NewGuid(),
                     FirstName = userDetails.FirstName,
                     LastName = userDetails.LastName,
                     EmailId = userDetails.EmailId,
@@ -39,53 +41,78 @@ namespace BillBuddy.API.Controllers
                     IsDeleted = false,
                     IsActive = true
                 };
+
                 _appDbContext.Users.Add(newUser);
                 await _appDbContext.SaveChangesAsync(cancellationToken);
-                return CreatedAtAction(nameof(GetUserDetails), new { id = newUser.PublicIndentifier }, MapToUserDetails(newUser));
+
+                return CreatedAtAction(nameof(GetUserById), new { id = newUser.PublicIdentifier }, MapToUserDetailsResponse(newUser));
             }
 
-            return Ok(MapToUserDetails(existingUser));
+            return Ok(MapToUserDetailsResponse(existingUser));
         }
 
         [HttpPut]
-        public async Task<ActionResult<UserDetails>> Update([FromBody] UserDetails userDetails, CancellationToken cancellationToken)
+        public async Task<ActionResult<UserDetailsResponse>> UpdateUser([FromBody] UpdateUserRequest userDetails, CancellationToken cancellationToken)
         {
-            var userToUpdate = await _appDbContext.Users.FirstOrDefaultAsync(u => u.PublicIndentifier == userDetails.PublicIndentifier, cancellationToken);
+            var userToUpdate = await _appDbContext.Users
+                .FirstOrDefaultAsync(u => u.PublicIdentifier == userDetails.PublicIdentifier, cancellationToken);
+
             if (userToUpdate == null)
             {
-                return NotFound($"The user with ID {userDetails.PublicIndentifier} was not found.");
+                return NotFound($"The user with ID {userDetails.PublicIdentifier} was not found.");
             }
+
             userToUpdate.ProfilePictureUrl = userDetails.ProfilePictureUrl;
             userToUpdate.FirstName = userDetails.FirstName;
             userToUpdate.LastName = userDetails.LastName;
             userToUpdate.EmailId = userDetails.EmailId;
+
             await _appDbContext.SaveChangesAsync(cancellationToken);
-            return Ok(MapToUserDetails(userToUpdate));
+
+            return Ok(MapToUserDetailsResponse(userToUpdate));
         }
 
         [HttpDelete("{id:guid}")]
-        public async Task<ActionResult<UserDetails>> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
+        public async Task<ActionResult> DeleteUser([FromRoute] Guid id, CancellationToken cancellationToken)
         {
             if (id.Equals(Guid.Empty))
             {
                 return BadRequest("User Id cannot be empty GUID.");
             }
-            var userToDelete = await _appDbContext.Users.FirstOrDefaultAsync(u => u.PublicIndentifier == id, cancellationToken);
+
+            var userToDelete = await _appDbContext.Users
+                .FirstOrDefaultAsync(u => u.PublicIdentifier == id, cancellationToken);
+
             if (userToDelete == null)
             {
                 return NotFound($"The user with ID {id} was not found.");
             }
+
             userToDelete.IsDeleted = true;
-            _appDbContext.SaveChanges();
-            return Ok(userToDelete);
+            await _appDbContext.SaveChangesAsync(cancellationToken);
+
+            return NoContent();
         }
 
-        private UserDetails MapToUserDetails(User user)
+        [HttpGet("{id:guid}")]
+        public async Task<ActionResult<UserDetailsResponse>> GetUserById([FromRoute] Guid id, CancellationToken cancellationToken)
         {
-            return new UserDetails
+            var user = await _appDbContext.Users
+                .FirstOrDefaultAsync(u => u.PublicIdentifier == id, cancellationToken);
+
+            if (user == null)
             {
-                Auth0Identifier = user.Auth0Identifier,
-                PublicIndentifier = user.PublicIndentifier,
+                return NotFound($"User with ID {id} was not found.");
+            }
+
+            return Ok(MapToUserDetailsResponse(user));
+        }
+
+        private UserDetailsResponse MapToUserDetailsResponse(User user)
+        {
+            return new UserDetailsResponse
+            {
+                PublicIdentifier = user.PublicIdentifier,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 EmailId = user.EmailId,
@@ -97,12 +124,13 @@ namespace BillBuddy.API.Controllers
     }
 }
 
+
 // We use "cancellationToken" just like we use takeUntil() for unsubscribe.
 // It stops all the async tasks when the request has been cancelled.We use this to aviod memory leaks.
 //For example, Frontend makes req, then cancells.But we continue to execute a task.But in this case, if we make cancellationToken available, We can stop the async calls
 
 // use Task.WhenAll() for multi-threaded programming.It makes Async calls like Fork join in Rxjs. For example :
-//var userTask = _appDbContext.Users.FirstOrDefaultAsync(u => u.PublicIndentifier == id, cancellationToken);
-//var userTask1 = _appDbContext.Users.FirstOrDefaultAsync(u => u.PublicIndentifier == id, cancellationToken);
-//var userTask2 = _appDbContext.Users.FirstOrDefaultAsync(u => u.PublicIndentifier == id, cancellationToken);
+//var userTask = _appDbContext.Users.FirstOrDefaultAsync(u => u.PublicIdentifier == id, cancellationToken);
+//var userTask1 = _appDbContext.Users.FirstOrDefaultAsync(u => u.PublicIdentifier == id, cancellationToken);
+//var userTask2 = _appDbContext.Users.FirstOrDefaultAsync(u => u.PublicIdentifier == id, cancellationToken);
 //var userss = await Task.WhenAll(userTask, userTask1, userTask2);

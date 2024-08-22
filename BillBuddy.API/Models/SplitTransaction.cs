@@ -8,8 +8,8 @@ public class SplitTransaction
     public DateTime TransactionDateTIme { get; set; }
     public DateTime SplitDateTIme { get; set; }
     public DateTime DueDateTime { get; set; }
-    public User PaidBy { get; set; }
-    public User CreatedBy { get; set; }
-    public List<SplitTransactionParticipant> Participants { get; set; }
+    public Guid PaidBy { get; set; }
+    public Guid CreatedBy { get; set; }
+    public List<Guid> ParticipantPublicIdentifiers { get; set; }
 
 }
